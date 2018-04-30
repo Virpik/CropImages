@@ -1,0 +1,8 @@
+[package]
+name = "CropImages"
+version = "0.1.0"
+authors = ["vvirpik <ach@sybis.ru>"]
+
+[dependencies]
+rand = "0.4.2"
+image = "*"
