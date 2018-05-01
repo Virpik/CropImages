@@ -1,11 +1,20 @@
 
+/**
+# Используемые ресурсы 
+
+- [[DOC] Для работы с изображениями](http://www.piston.rs/image/image/struct.ImageBuffer.html)
+- [[LIB] Для работы с изображениями](https://github.com/PistonDevelopers/image)
+- [Работа с путями](https://doc.rust-lang.org/beta/std/path/struct.Path.html)
+- [Документация по структурам](https://rurust.github.io/rust_book_ru/src/structs.html)
+*/
+
 extern crate image;
 extern crate rand;
 
 /// Для работы с файлами
 use std::fs;
 
-use std::fs::File;
+use std::fs::{ File, read_dir } ;
 use std::path::{Path, PathBuf};
 use std::ffi::OsStr;
 
@@ -75,7 +84,6 @@ fn main() {
 	
 	if str_arg == "f" {
 		
-
 		processing_file(path);
 		
 		return;
@@ -89,10 +97,10 @@ fn main() {
 	}
 
 	println!("Use CropImages (f or d) /path-to-file-ordirectory/");
-
 }
 
 fn processing_directory(path: &String) {
+	
 	let is_exist = self::path_exists(&path);
 	let is_dir = self::is_dir(&path);
 
@@ -105,7 +113,20 @@ fn processing_directory(path: &String) {
 		println!("it is not directory {:?}", path);
 		return;
 	}
+   
+   	let paths = fs::read_dir(path).unwrap();
 
+    for path in paths {
+
+	    if let Some(file_path) = path.unwrap().path().to_str() {
+	    	
+	    	let file_path = file_path.to_string();
+			
+			println!("File: {}", &file_path);
+
+	    	processing_file(&file_path);
+		} 
+    }
 
 }
 
@@ -123,8 +144,7 @@ fn processing_file(path: &String) {
 		return;
 	}
 
-	processing
-	(&path);
+	processing(&path);
 }
 
 pub fn path_exists(path: &str) -> bool {
@@ -141,10 +161,11 @@ pub fn is_dir(path: &str) -> bool {
 }
 
 pub fn is_file(path: &str) -> bool {
+	
 	let meta: fs::Metadata = match fs::metadata(path) {
             Ok(num) => num,
             Err(_) => return false,
-     };
+    };
 
 	return meta.is_file();
 }
@@ -152,42 +173,28 @@ pub fn is_file(path: &str) -> bool {
 
 fn processing(path: &String) {
 	
-	if let 
-	Some(meta) = file_meta(path) {
-		let ref mut img = image::open(path).unwrap();
+	if let Some(meta) = file_meta(path) {
 
-		let height = img.height();
-		let width = img.width();
 
-		println!("dimensions {:?} {:?}", img.dimensions(), img.color());
-		
-		let subimg = imageops::crop(img, 20, 20, width - 40, height - 124);
 
-		let imgBuff = subimg.to_image();
+		if let Ok(_) = image::open(path) {
+			
+			let ref mut img = image::open(path).unwrap();
 
-		imgBuff.save(meta.for_save_file_path).expect("[Error from save]");
+			let height = img.height();
+			let width = img.width();
+
+			println!("dimensions {:?} {:?}", img.dimensions(), img.color());
+			
+			let subimg = imageops::crop(img, 20, 20, width - 40, height - 124);
+
+			let imgBuff = subimg.to_image();
+
+			imgBuff.save(meta.for_save_file_path).expect("[Error from save]");
+		} else {
+			println!("[NOT IMG]: {:?} ", path);
+		}
 	}
-
-	// let mut meta: ImgFileMeta;
-
-	// match meta {
-	//     Some(v) => {
-		    
-	// 	    meta = v;
-
-	//     	println!("Not nul {:?}", v);
-	//     },
-
-	//     None => return,
-	// }
-
-	
-
-	// let ref mut fout = File::create("test.png").unwrap();
-	// image::ImageLuma8(subimg.to_image()).save(fout, image::PNG).unwrap();
-    // subimg.to_image().save(fout, image::JPEG).unwrap();
-
-	// let ref mut fout = File::create("test.png").unwrap();
 }
 
 fn file_meta(path: &String) -> Option<ImgFileMeta> {
@@ -232,8 +239,8 @@ fn file_meta(path: &String) -> Option<ImgFileMeta> {
 	};
 
 	return Some(imgFileMeta);
-
 }
+
 /*
 fn demo() {
     let mut image = ImageBuffer::<Rgba<u8>, _>::new(800, 800);
