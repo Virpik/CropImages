@@ -11,6 +11,8 @@
 extern crate image;
 extern crate rand;
 
+use std::thread;
+
 /// Для работы с файлами
 use std::fs;
 
@@ -115,7 +117,7 @@ fn processing_directory(path: &String) {
 	}
    
    	let paths = fs::read_dir(path).unwrap();
-
+/*
     for path in paths {
 
 	    if let Some(file_path) = path.unwrap().path().to_str() {
@@ -126,6 +128,24 @@ fn processing_directory(path: &String) {
 
 	    	processing_file(&file_path);
 		} 
+    }
+*/
+
+	let handles: Vec<_> = paths.map(|p| {
+		thread::spawn(move || {
+            if let Some(file_path) = p.unwrap().path().to_str() {
+	    	
+		    	let file_path = file_path.to_string();
+				
+				println!("File: {}", &file_path);
+
+		    	processing_file(&file_path);
+			} 
+        })
+    }).collect();
+
+    for h in handles {
+        h.join().unwrap();
     }
 
 }
@@ -175,10 +195,8 @@ fn processing(path: &String) {
 	
 	if let Some(meta) = file_meta(path) {
 
-
-
 		if let Ok(_) = image::open(path) {
-			
+
 			let ref mut img = image::open(path).unwrap();
 
 			let height = img.height();
