@@ -117,19 +117,6 @@ fn processing_directory(path: &String) {
 	}
    
    	let paths = fs::read_dir(path).unwrap();
-/*
-    for path in paths {
-
-	    if let Some(file_path) = path.unwrap().path().to_str() {
-	    	
-	    	let file_path = file_path.to_string();
-			
-			println!("File: {}", &file_path);
-
-	    	processing_file(&file_path);
-		} 
-    }
-*/
 
 	let handles: Vec<_> = paths.map(|p| {
 		thread::spawn(move || {
@@ -147,7 +134,6 @@ fn processing_directory(path: &String) {
     for h in handles {
         h.join().unwrap();
     }
-
 }
 
 fn processing_file(path: &String) {
